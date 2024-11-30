@@ -1,0 +1,20 @@
+{
+  "name": "post_drill",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "dev": "nodemon --env-file=.env app.js",
+    "start": "node --env-file=.env app.js"
+  },
+  "author": "Osher Levi and Alik Kholodenko",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.20.3",
+    "express": "^4.21.1",
+    "mongoose": "^8.8.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.7"
+  }
+}

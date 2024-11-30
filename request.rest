@@ -1,0 +1,77 @@
+# ---------------------------------
+# Posts API
+# ---------------------------------
+
+# 1. Create a New Post
+POST http://localhost:3000/post/createPost
+Content-Type: application/json
+
+{
+  "title": "My First Post",
+  "content": "This is the content of my first post.",
+  "sender": "Osher"
+}
+
+###
+# 2. Get All Posts
+GET http://localhost:3000/post/getAllPosts
+
+###
+# 3. Get a Post by ID
+GET http://localhost:3000/post/6740ba7c35f892ea9e7503af
+
+###
+# 4. Get Posts by Sender
+GET http://localhost:3000/post?sender=Osher
+
+###
+# 5. Update a Post
+PUT http://localhost:3000/post/6740ba7c35f892ea9e7503af
+Content-Type: application/json
+
+{
+  "title": "Updated Post Title",
+  "content": "Updated content for the post."
+}
+
+###
+# ---------------------------------
+# Comments API
+# ---------------------------------
+
+# 1. Add a Comment to a Post
+POST http://localhost:3000/comment/createComment
+Content-Type: application/json
+
+{
+    "postId": "6740ba7c35f892ea9e7503af",
+    "content": "This is a comment on the post.",
+    "sender": "Alik"
+}
+
+###
+# 2. Get a Comment by Sender
+GET http://localhost:3000/comment/?sender=Alik
+
+###
+
+###
+# 3. Get a Comment by ID
+GET http://localhost:3000/comment/6740b12e3e4ef1175d146f6b
+
+###
+# 4. Get All Comments for a Specific Post
+ http://localhost:3000/comment/post/673cc241e8cf2cf4cf46298e
+
+###
+# 5. Update a Comment
+PUT http://localhost:3000/comment/6740b12e3e4ef1175d146f6b
+Content-Type: application/json
+
+{
+  "content": "Updated comment content."
+}
+
+###
+# 6. Delete a Comment
+DELETE http://localhost:3000/comment/6740b12e3e4ef1175d146f6b
