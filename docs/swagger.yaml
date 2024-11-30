@@ -1,0 +1,501 @@
+openapi: 3.0.0
+info:
+  title: Assigment
+  description: "API documentation for Users, Posts, and Comments.",
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000
+    description: Local development server
+paths:
+  /posts:
+    get:
+      summary: Get all posts
+      description: Retrieve a list of all posts.
+      responses:
+        '200':
+          description: A list of posts.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Post'
+    post:
+      summary: Add a new post
+      description: Create a new post in the database.
+      requestBody:
+        description: Post object to be added
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostInput'
+      responses:
+        '201':
+          description: Post successfully created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+
+  /posts/{postId}:
+    get:
+      summary: Get a post by ID
+      description: Retrieve a single post by its unique ID.
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          description: The ID of the post to retrieve.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The requested post.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+        '404':
+          description: Post not found.
+    put:
+      summary: Update a post
+      description: Update the content of an existing post.
+      parameters:
+        - name: postId
+          in: path
+          required: true
+          description: The ID of the post to update.
+          schema:
+            type: string
+      requestBody:
+        description: Post object with updated content.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostInput'
+      responses:
+        '200':
+          description: Post successfully updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+
+  /posts/sender/{senderId}:
+    get:
+      summary: Get posts by sender
+      description: Retrieve all posts made by a specific sender.
+      parameters:
+        - name: senderId
+          in: path
+          required: true
+          description: The ID of the sender.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: A list of posts by the sender.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Post'
+
+  /comments:
+    get:
+      summary: Get all comments
+      description: Retrieve a list of all comments.
+      responses:
+        '200':
+          description: A list of comments.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Comment'
+    post:
+      summary: Add a new comment
+      description: Create a new comment for a specific post.
+      requestBody:
+        description: Comment object to be added
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommentInput'
+      responses:
+        '201':
+          description: Comment successfully created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+
+  /comments/{commentId}:
+    get:
+      summary: Get a comment by ID
+      description: Retrieve a single comment by its unique ID.
+      parameters:
+        - name: commentId
+          in: path
+          required: true
+          description: The ID of the comment to retrieve.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The requested comment.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+        '404':
+          description: Comment not found.
+    put:
+      summary: Update a comment
+      description: Update the content of an existing comment.
+      parameters:
+        - name: commentId
+          in: path
+          required: true
+          description: The ID of the comment to update.
+          schema:
+            type: string
+      requestBody:
+        description: Comment object with updated content.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommentInput'
+      responses:
+        '200':
+          description: Comment successfully updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+    delete:
+      summary: Delete a comment
+      description: Delete a comment by its unique ID.
+      parameters:
+        - name: commentId
+          in: path
+          required: true
+          description: The ID of the comment to delete.
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Comment successfully deleted.
+  /users:
+    get:
+      tags:
+        - User
+      summary: Get all users
+      description: Get all users from the database
+      operationId: getAllUsers
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '500':
+          description: An unexpected error occurred
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnexpectedError'
+
+    post:
+      tags:
+        - User
+      summary: Register new user
+      description: Register new user
+      operationId: register
+      requestBody:
+        description: Register new user
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserInput'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: An unexpected error occurred
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnexpectedError'
+
+  /users/{userId}:
+    get:
+      tags:
+        - User
+      summary: Get User by userID
+      description: Returns a single user
+      operationId: getUserByID
+      parameters:
+        - name: userId
+          in: path
+          description: ID of User to return
+          required: true
+          schema:
+            type: string
+            minLength: 24
+            maxLength: 24
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          description: User not found
+        '500':
+          description: An unexpected error occurred
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnexpectedError'
+    delete:
+      tags:
+        - User
+      summary: Delete user by ID
+      description: Deletes a user
+      operationId: deleteUserByID
+      parameters:
+        - name: userId
+          in: path
+          description: ID of user to delete
+          required: true
+          schema:
+            type: string
+            minLength: 24
+            maxLength: 24
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          description: User not found
+        '500':
+          description: An unexpected error occurred
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnexpectedError'
+    put:
+      tags:
+        - User
+      summary: Updates the user's email or password with form data
+      operationId: updateUser
+      parameters:
+        - name: userId
+          in: path
+          description: ID of user to return
+          required: true
+          schema:
+            type: string
+            minLength: 24
+            maxLength: 24
+      requestBody:
+        description: User updated data
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserInput'
+        required: true
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Missing required parameters
+        '404':
+          description: User not found
+        '500':
+          description: An unexpected error occurred
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnexpectedError'
+  /users/login:
+    post:
+      tags:
+        - User
+      summary: User login
+      description: User login
+      operationId: login
+      requestBody:
+        description: User login
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserInput'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: An unexpected error occurred
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnexpectedError'
+  /users/logout:
+    post:
+      tags:
+        - User
+      summary: User logout
+      description: User logout
+      operationId: logout
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '500':
+          description: An unexpected error occurred
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnexpectedError'
+components:
+  schemas:
+    Post:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        content:
+          type: string
+        sender:
+          type: string
+      required:
+        - id
+        - title
+        - sender
+    PostInput:
+      type: object
+      properties:
+        title:
+          type: string
+        content:
+          type: string
+        sender:
+          type: string
+      required:
+        - title
+        - sender
+    Comment:
+      type: object
+      properties:
+        id:
+          type: string
+        postId:
+          type: string
+        content:
+          type: string
+        sender:
+          type: string
+        date:
+          type: string
+      required:
+        - id
+        - postId
+        - content
+        - sender
+        - date
+    CommentInput:
+      type: object
+      properties:
+        postId:
+          type: string
+        content:
+          type: string
+        sender:
+          type: string
+      required:
+        - postId
+        - content
+        - sender
+    User:
+      type: object
+      properties:
+        _id:
+          type: string
+          minLength: 24
+          maxLength: 24
+        username:
+          type: string
+          description: must be unique
+        email:
+          type: string
+        password:
+          type: string
+        __v:
+          type: integer
+    UserInput:
+      type: object
+      required:
+        - username
+        - email
+        - password
+      properties:
+        username:
+          type: string
+        email:
+          type: string
+        password:
+          type: string
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+    UnexpectedError:
+      type: object
+      properties:
+        error:
+          type: string
+          example: An error occurred.
