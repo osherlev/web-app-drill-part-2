@@ -44,24 +44,24 @@ const login = async (req, res) => {
         const existingUser = await User.findOne({username});
         const isMatchedPassword = await bcrypt.compare(password, existingUser?.password);
         if (!isMatchedPassword) {
-            return res.status(400).json({ error: "wrong credentials. Please try again."});
+            return res.status(400).json({error: "Invalid username or password."});
         }
         const {accessToken, refreshToken} = await token.generateTokens(existingUser);
         token.updateCookies(accessToken, refreshToken, res);
         return res.status(200).json({message: "logged in successfully."});
     } catch (err) {
         console.warn("Error while logging in:", err);
-        return res.status(500).json({ error: "An error occurred while logging in.", err});
+        return res.status(400).json({error: "An error occurred while logging in.", err});
     }
 }
 
 const logout = async (req, res) => {
-    try{
+    try {
         token.clearCookies(res);
         return res.status(200).json({message: "logged out successfully."});
-    } catch {
+    } catch (err) {
         console.warn("Error while logging out:", err);
-        return res.status(500).json({ error: "An error occurred while logging out.", err});
+        return res.status(500).json({error: "An error occurred while logging out.", err});
     }
 }
 
