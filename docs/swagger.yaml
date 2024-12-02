@@ -12,14 +12,14 @@ paths:
       summary: Get all posts
       description: Retrieve a list of all posts.
       responses:
-        '200':
+        "200":
           description: A list of posts.
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Post'
+                  $ref: "#/components/schemas/Post"
     post:
       summary: Add a new post
       description: Create a new post in the database.
@@ -29,14 +29,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PostInput'
+              $ref: "#/components/schemas/PostInput"
       responses:
-        '201':
+        "201":
           description: Post successfully created.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Post'
+                $ref: "#/components/schemas/Post"
 
   /posts/{postId}:
     get:
@@ -50,13 +50,13 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: The requested post.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Post'
-        '404':
+                $ref: "#/components/schemas/Post"
+        "404":
           description: Post not found.
     put:
       summary: Update a post
@@ -74,14 +74,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PostInput'
+              $ref: "#/components/schemas/PostInput"
       responses:
-        '200':
+        "200":
           description: Post successfully updated.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Post'
+                $ref: "#/components/schemas/Post"
 
   /posts/sender/{senderId}:
     get:
@@ -95,28 +95,28 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: A list of posts by the sender.
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Post'
+                  $ref: "#/components/schemas/Post"
 
   /comments:
     get:
       summary: Get all comments
       description: Retrieve a list of all comments.
       responses:
-        '200':
+        "200":
           description: A list of comments.
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Comment'
+                  $ref: "#/components/schemas/Comment"
     post:
       summary: Add a new comment
       description: Create a new comment for a specific post.
@@ -126,14 +126,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CommentInput'
+              $ref: "#/components/schemas/CommentInput"
       responses:
-        '201':
+        "201":
           description: Comment successfully created.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Comment'
+                $ref: "#/components/schemas/Comment"
 
   /comments/{commentId}:
     get:
@@ -147,13 +147,13 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: The requested comment.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Comment'
-        '404':
+                $ref: "#/components/schemas/Comment"
+        "404":
           description: Comment not found.
     put:
       summary: Update a comment
@@ -171,14 +171,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CommentInput'
+              $ref: "#/components/schemas/CommentInput"
       responses:
-        '200':
+        "200":
           description: Comment successfully updated.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Comment'
+                $ref: "#/components/schemas/Comment"
     delete:
       summary: Delete a comment
       description: Delete a comment by its unique ID.
@@ -190,7 +190,7 @@ paths:
           schema:
             type: string
       responses:
-        '204':
+        "204":
           description: Comment successfully deleted.
   /user:
     get:
@@ -200,18 +200,18 @@ paths:
       description: Get all users from the database
       operationId: getAllUsers
       responses:
-        '200':
+        "200":
           description: Successful operation
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
-        '500':
+                $ref: "#/components/schemas/User"
+        "500":
           description: An unexpected error occurred
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UnexpectedError'
+                $ref: "#/components/schemas/UnexpectedError"
 
     post:
       tags:
@@ -224,28 +224,89 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserInput'
+              $ref: "#/components/schemas/UserInput"
         required: true
       responses:
-        '200':
+        "200":
           description: Successful operation
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
-        '400':
+                $ref: "#/components/schemas/User"
+        "400":
           description: Invalid input
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-        '500':
+                $ref: "#/components/schemas/Error"
+        "500":
           description: An unexpected error occurred
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UnexpectedError'
-
+                $ref: "#/components/schemas/UnexpectedError"
+  /user/email/{email}:
+    get:
+      tags:
+        - User
+      summary: Get User by Email
+      description: Returns a single user
+      operationId: getUserByEmail
+      parameters:
+        - name: email
+          in: path
+          description: email of User to return
+          required: true
+          schema:
+            type: string
+            minLength: 11
+            maxLength: 100
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "404":
+          description: User not found
+        "500":
+          description: An unexpected error occurred
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnexpectedError"
+  /user/username/{username}:
+    get:
+      tags:
+        - User
+      summary: Get User by username
+      description: Returns a single user
+      operationId: getUserByUserName
+      parameters:
+        - name: username
+          in: path
+          description: username of User to return
+          required: true
+          schema:
+            type: string
+            minLength: 4
+            maxLength: 30
+      responses:
+        "200":
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "404":
+          description: User not found
+        "500":
+          description: An unexpected error occurred
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnexpectedError"
   /user/{userId}:
     get:
       tags:
@@ -263,20 +324,20 @@ paths:
             minLength: 24
             maxLength: 24
       responses:
-        '200':
+        "200":
           description: successful operation
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
-        '404':
+                $ref: "#/components/schemas/User"
+        "404":
           description: User not found
-        '500':
+        "500":
           description: An unexpected error occurred
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UnexpectedError'
+                $ref: "#/components/schemas/UnexpectedError"
     delete:
       tags:
         - User
@@ -293,20 +354,20 @@ paths:
             minLength: 24
             maxLength: 24
       responses:
-        '200':
+        "200":
           description: successful operation
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
-        '404':
+                $ref: "#/components/schemas/User"
+        "404":
           description: User not found
-        '500':
+        "500":
           description: An unexpected error occurred
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UnexpectedError'
+                $ref: "#/components/schemas/UnexpectedError"
     put:
       tags:
         - User
@@ -326,25 +387,25 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserInput'
+              $ref: "#/components/schemas/UserInput"
         required: true
       responses:
-        '200':
+        "200":
           description: successful operation
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
-        '400':
+                $ref: "#/components/schemas/User"
+        "400":
           description: Missing required parameters
-        '404':
+        "404":
           description: User not found
-        '500':
+        "500":
           description: An unexpected error occurred
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UnexpectedError'
+                $ref: "#/components/schemas/UnexpectedError"
   /user/login:
     post:
       tags:
@@ -357,27 +418,27 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserInput'
+              $ref: "#/components/schemas/UserInput"
         required: true
       responses:
-        '200':
+        "200":
           description: Successful operation
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
-        '400':
+                $ref: "#/components/schemas/User"
+        "400":
           description: Invalid input
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-        '500':
+                $ref: "#/components/schemas/Error"
+        "500":
           description: An unexpected error occurred
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UnexpectedError'
+                $ref: "#/components/schemas/UnexpectedError"
   /user/logout:
     post:
       tags:
@@ -386,18 +447,18 @@ paths:
       description: User logout
       operationId: logout
       responses:
-        '200':
+        "200":
           description: Successful operation
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
-        '500':
+                $ref: "#/components/schemas/User"
+        "500":
           description: An unexpected error occurred
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UnexpectedError'
+                $ref: "#/components/schemas/UnexpectedError"
 components:
   schemas:
     Post:
