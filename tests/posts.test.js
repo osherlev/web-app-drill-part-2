@@ -30,14 +30,24 @@ describe("Create post", () => {
     expect(response.body.title).toBe(newPost.title);
   });
 
-  test("should not create a post without required fields", async () => {
+  test("should not create a post without required title", async () => {
     const response = await request(app)
       .post("/post/createPost")
-      .send({ sender: "admin" });
+      .send({ sender: "admin", content: "test" });
 
     expect(response.status).toBe(400);
     expect(response.text).toBe(
       "Post validation failed: title: Path `title` is required."
+    );
+  });
+  test("should not create a post without required sender", async () => {
+    const response = await request(app)
+      .post("/post/createPost")
+      .send({ title: "test", content: "test" });
+
+    expect(response.status).toBe(400);
+    expect(response.text).toBe(
+      "Post validation failed: sender: Path `sender` is required."
     );
   });
 });
@@ -59,6 +69,12 @@ describe("get posts", () => {
 
     expect(response.status).toBe(200);
     expect(response.body.length).toBe(2);
+  });
+  test("should retrieve 0 posts", async () => {
+    const response = await request(app).get("/post/getAllPosts");
+
+    expect(response.status).toBe(200);
+    expect(response.body.length).toBe(0);
   });
 });
 
@@ -82,6 +98,14 @@ describe("get Post by ID", () => {
 
     expect(response.status).toBe(404);
     expect(response.text).toBe("Post was not found");
+  });
+  test("should return 400 for invalid post ID format", async () => {
+    const response = await request(app).get("/post/invalid-id-format");
+
+    expect(response.status).toBe(400);
+    expect(response.text).toBe(
+      'Cast to ObjectId failed for value "invalid-id-format" (type string) at path "_id" for model "Post"'
+    );
   });
 });
 

@@ -38,14 +38,25 @@ describe("Create comment", () => {
     expect(response.body.comment.content).toBe(newComment.content);
   });
 
-  test("should not create a comment without required fields", async () => {
+  test("should not create a comment without required postId", async () => {
     const response = await request(app)
       .post("/comment/createComment")
-      .send({ sender: "admin" });
+      .send({ sender: "admin", content: "test" });
 
     expect(response.status).toBe(500);
     expect(response.body.error).toBe(
       "Comment validation failed: postId: Path `postId` is required."
+    );
+  });
+  test("should not create a comment without required postId", async () => {
+    const nonExistentId = new mongoose.Types.ObjectId();
+    const response = await request(app)
+      .post("/comment/createComment")
+      .send({ postId: nonExistentId, content: "test" });
+
+    expect(response.status).toBe(500);
+    expect(response.body.error).toBe(
+      "Comment validation failed: sender: Path `sender` is required."
     );
   });
 });
@@ -100,6 +111,47 @@ describe("get comment by ID", () => {
 
     expect(response.status).toBe(404);
     expect(response.text).toBe("Comment was not found");
+  });
+});
+
+describe("get comments by Post", () => {
+  test("should retrieve all comments by Post", async () => {
+    const post = await postModel.create({
+      title: "test post",
+      content: "test post for get comment by id",
+      sender: "admin",
+    });
+    await commentModel.create({
+      sender: "admin2",
+      postId: post._id,
+      content: "test comment 1",
+    });
+    await commentModel.create({
+      sender: "admin1",
+      postId: post._id,
+      content: "test comment 2",
+    });
+
+    const response = await request(app).get(`/comment/post/${post._id}`);
+
+    expect(response.status).toBe(200);
+    expect(response.body.length).toBe(2);
+  });
+  test("should return 404 for a non-existent post ID", async () => {
+    const nonExistentId = new mongoose.Types.ObjectId();
+
+    const response = await request(app).get(`/comment/post/${nonExistentId}`);
+
+    expect(response.status).toBe(404);
+    expect(response.body.message).toBe("No comments found for this post.");
+  });
+  test("should return 500 for a bad post ID", async () => {
+    const response = await request(app).get(`/comment/post/674e0752dbd35c75c`);
+
+    expect(response.status).toBe(500);
+    expect(response.body.error).toBe(
+      'Cast to ObjectId failed for value "674e0752dbd35c75c" (type string) at path "postId" for model "Comment"'
+    );
   });
 });
 
