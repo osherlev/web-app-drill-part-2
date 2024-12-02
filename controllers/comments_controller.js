@@ -18,7 +18,7 @@ const createComment = async (req, res) => {
 };
 
 const getCommentsBySender = async (req, res) => {
-  const filter = req.body.sender;
+  const filter = req.query.sender;
   let comments;
   try {
     comments = filter
