@@ -87,8 +87,8 @@ POST http://localhost:3000/user/registerUser
 Content-Type: application/json
 
 {
-  "username": "Osher",
-  "email": "osherlev317@gmail.com",
+  "username": "Osher2",
+  "email": "osherlev318@gmail.com",
   "password": "Alik is awesome"
 }
 
@@ -110,15 +110,29 @@ GET http://localhost:3000/user/username/Osher
 
 ###
 # 6. Update User
-PUT http://localhost:3000/user/674e0dac0482b3f5612a4b0e
+PUT http://localhost:3000/user/674e125e171aa8b24b6d9b28
 Content-Type: application/json
 
 {
-  "username": "Osher",
-  "email": "osherlev318@gmail.com",
-  "password": "Alik is awesome"
+  "username": "Osher1",
+  "email": "osherlev317@gmail.com",
+  "password": "Alik"
 }
 
 ###
 # 7. Delete User
 DELETE http://localhost:3000/user/674e0dac0482b3f5612a4b0e
+
+###
+# 8. Login User
+POST http://localhost:3000/user/login
+Content-Type: application/json
+
+{
+  "username": "Osher1",
+  "password": "Alik"
+}
+
+###
+# 9. Logout User
+POST http://localhost:3000/user/logout
