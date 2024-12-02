@@ -75,3 +75,27 @@ Content-Type: application/json
 ###
 # 6. Delete a Comment
 DELETE http://localhost:3000/comment/6740b12e3e4ef1175d146f6b
+
+
+# ---------------------------------
+# Users API
+# ---------------------------------
+
+###
+# 1. Create a New User
+POST http://localhost:3000/user/registerUser
+Content-Type: application/json
+
+{
+  "username": "Osher",
+  "email": "osherlev317@gmail.com.",
+  "password": "Alik is awesome"
+}
+
+###
+# 2. Get All Users
+GET http://localhost:3000/user
+
+###
+# 3. Get a User by ID
+GET http://localhost:3000/user/67486af520a4e91b65ad7421
