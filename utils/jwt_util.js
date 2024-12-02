@@ -2,9 +2,9 @@ const jwt = require("jsonwebtoken");
 
 const generateTokens = async (user) => {
     const MAX_NUMBER = 1000000;
-    const accessToken = jwt.sign({ "_id": user._id }, process.env.TOKEN_SECRET, { expiresIn: process.env.ACCESS_TOKEN_EXPIRATION });
+    const accessToken = jwt.sign({ "_id": user._id }, process.env.TOKEN_SECRET, { expiresIn: process.env.ACCESS_TOKEN_EXPIRATION_MILI });
     const random = Math.floor(Math.random() * MAX_NUMBER).toString();
-    const refreshToken = jwt.sign({ "_id": user._id, "random": random }, process.env.TOKEN_SECRET, {expiresIn: process.env.REFRESH_TOKEN_EXPIRATION});
+    const refreshToken = jwt.sign({ "_id": user._id, "random": random }, process.env.TOKEN_SECRET, {expiresIn: process.env.REFRESH_TOKEN_EXPIRATION_MILI});
     return {accessToken, refreshToken};
 }
 
@@ -13,14 +13,14 @@ const updateCookies = (accessToken, refreshToken, res) => {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'Strict',
-        maxAge: process.env.ACCESS_TOKEN_EXPIRATION_MILLISECONDS
+        maxAge: process.env.ACCESS_TOKEN_EXPIRATION_MILI
     });
 
     res.cookie('refreshToken', refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'Strict',
-        maxAge: process.env.REFRESH_TOKEN_EXPIRATION_MILLISECONDS
+        maxAge:  process.env.REFRESH_TOKEN_EXPIRATION_MILI
     });
 }
 
