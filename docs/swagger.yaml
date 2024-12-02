@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   title: Assigment
-  description: "API documentation for Users, Posts, and Comments.",
+  description: "API documentation for Users, Posts, and Comments."
   version: 1.0.0
 servers:
   - url: http://localhost:3000
@@ -192,7 +192,7 @@ paths:
       responses:
         '204':
           description: Comment successfully deleted.
-  /users:
+  /user:
     get:
       tags:
         - User
@@ -246,7 +246,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/UnexpectedError'
 
-  /users/{userId}:
+  /user/{userId}:
     get:
       tags:
         - User
@@ -310,7 +310,7 @@ paths:
     put:
       tags:
         - User
-      summary: Updates the user's email or password with form data
+      summary: Updates the user's email, username or password with form data
       operationId: updateUser
       parameters:
         - name: userId
@@ -345,7 +345,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UnexpectedError'
-  /users/login:
+  /user/login:
     post:
       tags:
         - User
@@ -378,7 +378,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UnexpectedError'
-  /users/logout:
+  /user/logout:
     post:
       tags:
         - User
@@ -471,6 +471,7 @@ components:
           description: must be unique
         email:
           type: string
+          description: must be unique
         password:
           type: string
         __v:
