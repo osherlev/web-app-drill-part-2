@@ -38,8 +38,12 @@ const getUserById = async (req, res) => {
     }
 };
 const getUserByEmail = async (req, res) => {
+    const email = req.params.email;
+    if (!validateEmail(email)) {
+        return res.status(500).json({error: 'Invalid email format'});
+    }
     try {
-        const user = await User.findOne({email: req.params.email}, "-password");
+        const user = await User.findOne({email: email}, "-password");
         if (!user) {
             return res.status(404).json({error: "User not found."});
         }
@@ -82,10 +86,9 @@ const updateUser = async (req, res) => {
 
         res.status(200).json(user);
     } catch (error) {
-          console.error('Error updating user:', error.message);
-       return res.status(500).json({error: error.message});
+        return res.status(500).json({error: error.message});
     }
-};
+}
 
 const deleteUser = async (req, res) => {
     try {
@@ -119,12 +122,16 @@ const login = async (req, res) => {
 const logout = async (req, res) => {
     try {
         token.clearCookies(res);
-        await User.updateOne({_id: req.user.id}, {isLoggedIn: false});
         return res.status(200).json({message: "logged out successfully."});
     } catch (err) {
         return res.status(500).json({error: "An error occurred while logging out.", err});
     }
 }
+
+const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+};
 
 module.exports = {
     registerUser,

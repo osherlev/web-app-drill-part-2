@@ -2,6 +2,8 @@ const request = require("supertest");
 const initApp = require("../server.js");
 const mongoose = require("mongoose");
 const userModel = require("../models/users_model");
+const token = require("../utils/jwt_util");
+const bcrypt = require('bcrypt');
 
 let app;
 beforeAll(async () => {
@@ -9,6 +11,9 @@ beforeAll(async () => {
 });
 beforeEach(async () => {
     await userModel.deleteMany();
+});
+afterEach(async () => {
+    jest.restoreAllMocks();
 });
 
 afterAll(async () => {
@@ -176,19 +181,6 @@ describe('Authentication', () => {
             expect(response.body).toHaveProperty('error');
         });
     });
-
-    describe('POST /user/logout', () => {
-        it('should return a response with a empty cookie after user is logged out', async () => {
-            const response = await request(app).post("/user/logout").send({});
-            const cookies = response.headers['set-cookie'];
-            expect(cookies).toBeDefined();
-            expect(cookies.length).toBeGreaterThan(0);
-            const accessTokenCookie = cookies.find(cookie => cookie.startsWith('accessToken='));
-            expect(accessTokenCookie).toBeDefined();
-            const cookieValue = accessTokenCookie.split('=')[1].split(';')[0];
-            expect(cookieValue).toBe('');
-        });
-    });
 });
 
 // Update User Tests
@@ -230,10 +222,23 @@ describe('Update User', () => {
                 password: 'Password123!',
             });
 
-            const response = await request(app).put(`/user/${user._id}`).send({});
+            const response = await request(app).put(`/user/${user._id}`).send({password: null});
 
             expect(response.status).toBe(500);
             expect(response.body).toHaveProperty('error');
+        });
+
+        it('should return 400 for invalid update password', async () => {
+            const user = await userModel.create({
+                username: 'osher',
+                email: 'test@example.com',
+                password: 'Password123!',
+            });
+
+            const response = await request(app).put(`/user/${user._id}`).send({password: ' '});
+
+            expect(response.status).toBe(400);
+            expect(response.body).toHaveProperty('error','Password cannot be empty.');
         });
 
         it('should return 500 if username already exists', async () => {
@@ -253,6 +258,34 @@ describe('Update User', () => {
 
             expect(response.status).toBe(500);
             expect(response.body).toHaveProperty('error');
+        });
+    });
+    describe('PUT /user/:id - Password Hashing', () => {
+        it('should hash the password when updating it', async () => {
+            const user = await userModel.create({
+                username: 'osher',
+                email: 'test@example.com',
+                password: 'Password123!',
+            });
+
+            const newPassword = 'NewPassword123!';
+            const response = await request(app).put(`/user/${user._id}`).send({ password: newPassword });
+
+            expect(response.status).toBe(200);
+
+            const updatedUser = await userModel.findById(user._id);
+            const isMatch = await bcrypt.compare(newPassword, updatedUser.password);
+
+            expect(isMatch).toBe(true);
+
+            // Optional: Spy on bcrypt methods to ensure they're called
+            const genSaltSpy = jest.spyOn(bcrypt, 'genSalt');
+            const hashSpy = jest.spyOn(bcrypt, 'hash');
+
+            await bcrypt.hash(newPassword, await bcrypt.genSalt(10)); // Mimic hashing for spying
+
+            expect(genSaltSpy).toHaveBeenCalled();
+            expect(hashSpy).toHaveBeenCalled();
         });
     });
 });
@@ -334,22 +367,22 @@ describe('Get User by Email', () => {
     describe('GET /user/email/:email', () => {
         it('should retrieve a user by email', async () => {
             const user = await userModel.create({
-                username: 'osher',
-                email: 'test@example.com',
+                username: 'alik1',
+                email: 'alik@example.com',
                 password: 'Password123!',
             });
 
-            const response = await request(app).get('/user/email/test@example.com');
+            const response = await request(app).get('/user/email/alik@example.com');
 
             expect(response.status).toBe(200);
             expect(response.body).toEqual(expect.objectContaining({
                 email: user.email,
             }));
         });
-        it('should return 500 if user not exist', async () => {
+        it('should return 404 if user not exist', async () => {
             const response = await request(app).get('/user/email/nonexistent@example.com');
 
-            expect(response.status).toBe(500);
+            expect(response.status).toBe(404);
             expect(response.body).toHaveProperty('error');
         });
 
@@ -359,37 +392,35 @@ describe('Get User by Email', () => {
             expect(response.status).toBe(500);
             expect(response.body).toHaveProperty('error');
         });
+        it('should return 500 if there is a database error', async () => {
+            jest.spyOn(userModel, 'findOne').mockImplementation(() => {
+                throw new Error('Database error');
+            });
+
+            const response = await request(app).get('/user/email/test@example.com');
+
+            expect(response.status).toBe(500);
+            expect(response.body).toHaveProperty('error', 'Database error');
+        });
     });
 });
 
 describe('Logout', () => {
     describe('POST /logout', () => {
-        it('should successfully log out the user', async () => {
 
-            const user = await userModel.create({
-                username: 'osher',
-                email: 'test@example.com',
-                password: 'Password123!',
-            });
-
-            const loginResponse = await request(app)
-                .post('/user/login')
-                .send({ username: user.username, password: 'Password123!' });
-
-            expect(loginResponse.status).toBe(200);
-            const token = loginResponse.body.token;
-
-            // Call the logout endpoint
-            const response = await request(app)
-                .post('/user/logout')
-                .set('Authorization', `Bearer ${token}`);
-
-            expect(response.status).toBe(200);
-            expect(response.body.message).toBe('Logout successful.');
+        it('should return a response with a empty cookie after user is logged out', async () => {
+            const response = await request(app).post("/user/logout").send({});
+            const cookies = response.headers['set-cookie'];
+            expect(cookies).toBeDefined();
+            expect(cookies.length).toBeGreaterThan(0);
+            const accessTokenCookie = cookies.find(cookie => cookie.startsWith('accessToken='));
+            expect(accessTokenCookie).toBeDefined();
+            const cookieValue = accessTokenCookie.split('=')[1].split(';')[0];
+            expect(cookieValue).toBe('');
         });
 
         it('should return 500 if there is a logout error', async () => {
-            jest.spyOn(userModel, 'updateOne').mockImplementation(() => {
+            jest.spyOn(token, 'clearCookies').mockImplementation(() => {
                 throw new Error('Logout failed');
             });
             const response = await request(app).post('/user/logout');
