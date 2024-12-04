@@ -10,7 +10,9 @@ beforeAll(async () => {
 beforeEach(async () => {
   await postModel.deleteMany();
 });
-
+afterEach(async () => {
+  jest.restoreAllMocks();
+});
 afterAll(async () => {
   mongoose.connection.close();
 });
@@ -75,6 +77,14 @@ describe("get posts", () => {
 
     expect(response.status).toBe(200);
     expect(response.body.length).toBe(0);
+  });
+  test('should return 400 if there is an error during fetching posts', async () => {
+    jest.spyOn(postModel, 'find').mockImplementation(() => {
+      throw new Error('getAllPosts failed');
+    });
+    const response = await request(app).get('/post/getAllPosts');
+    expect(response.status).toBe(400);
+    expect(response.text).toBe('getAllPosts failed');;
   });
 });
 
@@ -145,6 +155,15 @@ describe("get Post by Sender", () => {
     expect(response.status).toBe(404);
     expect(response.body.message).toBe("No posts found for this sender");
   });
+  test('should return 500 if there is an error during fetching posts', async () => {
+    jest.spyOn(postModel, 'find').mockImplementation(() => {
+      throw new Error('getPostsBySender failed');
+    });
+
+    const response = await request(app).get(`/post/?sender=test`);
+    expect(response.status).toBe(500);
+    expect(response.body.error).toBe('getPostsBySender failed');;
+  });
 });
 
 describe("update Post", () => {
@@ -177,5 +196,14 @@ describe("update Post", () => {
 
     expect(response.status).toBe(404);
     expect(response.body.message).toBe("Post not found");
+  });
+  test('should return 500 if there is an error during fetching posts', async () => {
+    jest.spyOn(postModel, 'findByIdAndUpdate').mockImplementation(() => {
+      throw new Error('updatePost failed');
+    });
+    const nonExistentId = new mongoose.Types.ObjectId();
+    const response = await request(app).put(`/post/${nonExistentId}`);
+    expect(response.status).toBe(500);
+    expect(response.body.error).toBe('updatePost failed');;
   });
 });

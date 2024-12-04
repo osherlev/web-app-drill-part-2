@@ -6,12 +6,12 @@ router.post("/createComment", commentController.createComment);
 
 router.get("/", commentController.getCommentsBySender);
 
-router.get("/:id", commentController.getCommentById);
+router.get("/comment_op/:id", commentController.getCommentById);
 
-router.get("/post/:post_id", commentController.getCommentsByPost);
+router.get("/post", commentController.getCommentsByPost);
 
-router.put("/:id", commentController.updateComment);
+router.put("/comment_op/:id", commentController.updateComment);
 
-router.delete("/:id", commentController.deleteComment);
+router.delete("/comment_op/:id", commentController.deleteComment);
 
 module.exports = router;

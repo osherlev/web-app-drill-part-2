@@ -46,7 +46,7 @@ const getCommentById = async (req, res) => {
 
 const getCommentsByPost = async (req, res) => {
   try {
-    const postId = req.params.post_id;
+    const postId = req.query.post_id;
     if (!postId) {
       return res.status(400).json({ error: "Post ID is required." });
     }
@@ -65,15 +65,13 @@ const getCommentsByPost = async (req, res) => {
 const updateComment = async (req, res) => {
   try {
     const commentId = req.params.id;
-    if (commentId) {
-      const comment = await Comment.findByIdAndUpdate(commentId, req.body, {
-        new: true,
-      });
-      if (!comment) {
-        return res.status(404).json({ message: "Comment was not found" });
-      }
-      res.status(200).json(comment);
+    const comment = await Comment.findByIdAndUpdate(commentId, req.body, {
+      new: true,
+    });
+    if (!comment) {
+      return res.status(404).json({ message: "Comment was not found" });
     }
+    res.status(200).json(comment);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

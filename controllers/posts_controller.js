@@ -11,10 +11,9 @@ const createPost = async (req, res) => {
 };
 
 const getAllPosts = async (req, res) => {
-  const filter = req.query.sender;
   let posts;
   try {
-    posts = filter ? await Post.find({ sender: filter }) : await Post.find();
+    posts = await Post.find();
     res.send(posts);
   } catch (error) {
     res.status(400).send(error.message);

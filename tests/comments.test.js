@@ -11,7 +11,9 @@ beforeAll(async () => {
 beforeEach(async () => {
   await commentModel.deleteMany();
 });
-
+afterEach(async () => {
+  jest.restoreAllMocks();
+});
 afterAll(async () => {
   mongoose.connection.close();
 });
@@ -37,27 +39,21 @@ describe("Create comment", () => {
     expect(response.status).toBe(201);
     expect(response.body.comment.content).toBe(newComment.content);
   });
-
-  test("should not create a comment without required postId", async () => {
+  test('should return 400 if required fields are missing', async () => {
     const response = await request(app)
-      .post("/comment/createComment")
-      .send({ sender: "admin", content: "test" });
+      .post('/comment/createComment')
+      .send({});
 
+    expect(response.status).toBe(400);
+    expect(response.body).toEqual({error: "All fields are required: postId, sender, content"});
+  })
+  test('should return 500 if there is an error during fetching comments', async () => {
+    jest.spyOn(commentModel, 'create').mockImplementation(() => {
+      throw new Error('createComment failed');
+    });
+    const response = await request(app).post('/comment/createComment').send({sender:"test", postId:"test", content:"test"});
     expect(response.status).toBe(500);
-    expect(response.body.error).toBe(
-      "Comment validation failed: postId: Path `postId` is required."
-    );
-  });
-  test("should not create a comment without required postId", async () => {
-    const nonExistentId = new mongoose.Types.ObjectId();
-    const response = await request(app)
-      .post("/comment/createComment")
-      .send({ postId: nonExistentId, content: "test" });
-
-    expect(response.status).toBe(500);
-    expect(response.body.error).toBe(
-      "Comment validation failed: sender: Path `sender` is required."
-    );
+    expect(response.body.error).toBe('createComment failed');;
   });
 });
 
@@ -99,7 +95,7 @@ describe("get comment by ID", () => {
       content: "test comment",
     });
 
-    const response = await request(app).get(`/comment/${comment._id}`);
+    const response = await request(app).get(`/comment/comment_op/${comment._id}`);
 
     expect(response.status).toBe(200);
     expect(response.body.content).toBe(comment.content);
@@ -107,10 +103,18 @@ describe("get comment by ID", () => {
   test("should return 404 for a non-existent comment ID", async () => {
     const nonExistentId = new mongoose.Types.ObjectId();
 
-    const response = await request(app).get(`/comment/${nonExistentId}`);
+    const response = await request(app).get(`/comment/comment_op/${nonExistentId}`);
 
     expect(response.status).toBe(404);
     expect(response.text).toBe("Comment was not found");
+  });
+  test('should return 400 if there is an error during fetching comments', async () => {
+    jest.spyOn(commentModel, 'findById').mockImplementation(() => {
+      throw new Error('getCommentsById failed');
+    });
+    const response = await request(app).get('/comment/comment_op/a');
+    expect(response.status).toBe(400);
+    expect(response.text).toBe('getCommentsById failed');;
   });
 });
 
@@ -132,7 +136,7 @@ describe("get comments by Post", () => {
       content: "test comment 2",
     });
 
-    const response = await request(app).get(`/comment/post/${post._id}`);
+    const response = await request(app).get(`/comment/post?post_id=${post._id}`);
 
     expect(response.status).toBe(200);
     expect(response.body.length).toBe(2);
@@ -140,18 +144,26 @@ describe("get comments by Post", () => {
   test("should return 404 for a non-existent post ID", async () => {
     const nonExistentId = new mongoose.Types.ObjectId();
 
-    const response = await request(app).get(`/comment/post/${nonExistentId}`);
+    const response = await request(app).get(`/comment/post?post_id=${nonExistentId}`);
 
     expect(response.status).toBe(404);
     expect(response.body.message).toBe("No comments found for this post.");
   });
-  test("should return 500 for a bad post ID", async () => {
-    const response = await request(app).get(`/comment/post/674e0752dbd35c75c`);
+  test("should return 400 for a required post ID", async () => {
+    const nonExistentId = new mongoose.Types.ObjectId();
 
+    const response = await request(app).get(`/comment/post?post_id=`);
+
+    expect(response.status).toBe(400);
+    expect(response.body.error).toBe("Post ID is required.");
+  });
+  test('should return 500 if there is an error during fetching comments', async () => {
+    jest.spyOn(commentModel, 'find').mockImplementation(() => {
+      throw new Error('getCommentsByPost failed');
+    });
+    const response = await request(app).get('/comment/post?post_id=test');
     expect(response.status).toBe(500);
-    expect(response.body.error).toBe(
-      'Cast to ObjectId failed for value "674e0752dbd35c75c" (type string) at path "postId" for model "Comment"'
-    );
+    expect(response.body.error).toBe('getCommentsByPost failed');;
   });
 });
 
@@ -201,6 +213,14 @@ describe("get comment by Sender", () => {
     expect(response.status).toBe(200);
     expect(response.body.length).toBe(2);
   });
+  test('should return 400 if there is an error during fetching comments', async () => {
+    jest.spyOn(commentModel, 'find').mockImplementation(() => {
+      throw new Error('getCommentsBySender failed');
+    });
+    const response = await request(app).get('/comment/?sender="test"');
+    expect(response.status).toBe(400);
+    expect(response.text).toBe('getCommentsBySender failed');;
+  });
 });
 
 describe("update comment", () => {
@@ -223,7 +243,7 @@ describe("update comment", () => {
     };
 
     const response = await request(app)
-      .put(`/comment/${comment._id}`)
+      .put(`/comment/comment_op/${comment._id}`)
       .send(updatedComment)
       .set("Content-Type", "application/json");
 
@@ -234,10 +254,19 @@ describe("update comment", () => {
   test("should return 404 for a non-existent comment id", async () => {
     const nonExistentId = new mongoose.Types.ObjectId();
 
-    const response = await request(app).put(`/comment/${nonExistentId}`);
+    const response = await request(app).put(`/comment/comment_op/${nonExistentId}`);
 
     expect(response.status).toBe(404);
     expect(response.body.message).toBe("Comment was not found");
+  });
+  test('should return 500 if there is an error during fetching comments', async () => {
+    jest.spyOn(commentModel, 'findByIdAndUpdate').mockImplementation(() => {
+      throw new Error('updateComment failed');
+    });
+    const nonExistentId = new mongoose.Types.ObjectId();
+    const response = await request(app).put(`/comment/comment_op/${nonExistentId}`);
+    expect(response.status).toBe(500);
+    expect(response.body.error).toBe('updateComment failed');;
   });
 });
 
@@ -254,7 +283,7 @@ describe("delete comment", () => {
       content: "test comment",
     });
 
-    const response = await request(app).delete(`/comment/${comment._id}`);
+    const response = await request(app).delete(`/comment/comment_op/${comment._id}`);
 
     expect(response.status).toBe(200);
     expect(response.body.message).toBe("Comment deleted successfully");
@@ -263,9 +292,18 @@ describe("delete comment", () => {
   test("should return 404 for a non-existent comment id", async () => {
     const nonExistentId = new mongoose.Types.ObjectId();
 
-    const response = await request(app).delete(`/comment/${nonExistentId}`);
+    const response = await request(app).delete(`/comment/comment_op/${nonExistentId}`);
 
     expect(response.status).toBe(404);
     expect(response.body.message).toBe("Comment not found");
+  });
+  test('should return 500 if there is an error during fetching comments', async () => {
+    jest.spyOn(commentModel, 'findByIdAndDelete').mockImplementation(() => {
+      throw new Error('deleteComment failed');
+    });
+    const nonExistentId = new mongoose.Types.ObjectId();
+    const response = await request(app).delete(`/comment/comment_op/${nonExistentId}`);
+    expect(response.status).toBe(500);
+    expect(response.body.error).toBe('deleteComment failed');;
   });
 });
